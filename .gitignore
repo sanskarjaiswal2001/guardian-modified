@@ -1,0 +1,7 @@
+data.json
+history.log
+.idea
+__pycache__
+build
+venv
+/network/secret.py
