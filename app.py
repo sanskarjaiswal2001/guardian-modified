@@ -282,6 +282,7 @@ def main():
                     try:
                         ip_calc = IPValidator.validate_get(ip)
                         ip_set.add(ip_calc)
+                        logger.info('IP address validated and added: %s', ip_calc)
                     except ValidationError:
                         logger.warning('Not valid IP or URL: {}'.format(ip))
                         print_white('Not valid IP or URL: "' +
@@ -379,6 +380,7 @@ def main():
                     try:
                         ip_calc = IPValidator.validate_get(ip)
                         ip_set.add(ip_calc)
+                        logger.info('Got an IP from auto_whitelist validator:%s',ip_calc)
                     except ValidationError:
                         logger.warning('Not valid IP or URL: {}'.format(ip))
                         print_white('Not valid IP or URL: "' +
