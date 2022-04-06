@@ -66,6 +66,7 @@ def get_private_ip():
     soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     soc.connect(("8.8.8.8", 80))
     local_ip = soc.getsockname()[0]
+    logger.info('Got a private IP: %s', local_ip)
     soc.close()
     return local_ip
 
@@ -290,6 +291,7 @@ def main():
 
             for ip, friend in friends:
                 if friend.get('enabled'):
+                    logger.info('Got a friend IP:%s %s',friend, ip)
                     ip_set.add(ip)
 
             logger.info('Starting whitelisted session with {} IPs'.format(len(ip_set)))
