@@ -405,7 +405,7 @@ class IPCollector(object):
 
     def start(self):
         self.process.start()
-        logger.info('Dispatched ipcollector process')
+        logger.info('Dispatched IPcollector process')
 
     def stop(self):
         self.process.terminate()
