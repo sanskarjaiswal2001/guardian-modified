@@ -75,24 +75,18 @@ class NameInCustom(Validator):
     def validate(self, document):
         global custom_ips
         if custom_ips.has(document.text):
-            raise ValidationError(
-                message='Name already in list',
-                cursor_position=len(document.text))  # Move cursor to end
-
+            raise ValidationError(message = 'Name already in list', cursor_position = len(document.text))  # Move cursor to end
 
 class NameInBlacklist(Validator):
     def validate(self, document):
         global blacklist
         if blacklist.has(document.text):
-            raise ValidationError(
-                message='Name already in list',
-                cursor_position=len(document.text))  # Move cursor to end
+            raise ValidationError(message = 'Name already in list', cursor_position = len(document.text))  # Move cursor to end
 
 
 class IPValidator(Validator):
     def validate(self, document):
-        error = ValidationError(message='Not a valid IP or URL',
-                                cursor_position=len(document.text))  # Move cursor to end
+        error = ValidationError(message = 'Not a valid IP or URL', cursor_position = len(document.text))  # Move cursor to end
         try:
             ip = document.text
             if ipv4.match(ip):
@@ -105,8 +99,7 @@ class IPValidator(Validator):
 
     @staticmethod
     def validate_get(text):
-        error = ValidationError(message='Not a valid IP or URL',
-                                cursor_position=len(text))  # Move cursor to end
+        error = ValidationError(message = 'Not a valid IP or URL', cursor_position = len(text))  # Move cursor to end
         try:
             ip = text
             if ipv4.match(ip):
@@ -121,45 +114,31 @@ class IPValidator(Validator):
         except ipaddress.AddressValueError:
             raise error
         except socket.gaierror:
-            raise ValidationError(message='URL {} can\'t be resolved to IP.'.format(text),
-                                  cursor_position=len(text))  # Move cursor to end
-
+            raise ValidationError(message = 'URL {} can\'t be resolved to IP.'.format(text), cursor_position = len(text))  # Move cursor to end
 
 class IPInCustom(IPValidator):
     def validate(self, document):
         super().validate(document)
         global custom_ips
         if document.text in custom_ips or custom_ips.has(document.text, 'value'):
-            raise ValidationError(
-                message='IP already in list',
-                cursor_position=len(document.text)
-            )  # Move cursor to end
-
+            raise ValidationError(message = 'IP already in list', cursor_position = len(document.text))  # Move cursor to end
 
 class IPInBlacklist(Validator):
     def validate(self, document):
         super().validate(document)
         global blacklist
         if document.text in blacklist or blacklist.has(document.text, 'value'):
-            raise ValidationError(
-                message='IP already in list',
-                cursor_position=len(document.text)
-            )  # Move cursor to end
-
+            raise ValidationError(message = 'IP already in list', cursor_position = len(document.text))  # Move cursor to end
 
 class ValidateToken(Validator):
     def validate(self, document):
         conn = networkmanager.Cloud(document.text)
         if not conn.check_connection():
-            raise ValidationError(
-                message='DigitalArc is unavailable, unable to check token.',
-                cursor_position=len(document.text))  # Move cursor to end
+            logger.info("Token validated in ValidateToken func")
+            raise ValidationError(message = 'DigitalArc is unavailable, unable to check token.', cursor_position = len(document.text))  # Move cursor to end
 
         if not conn.check_token():
-            raise ValidationError(
-                message='Token invalid',
-                cursor_position=len(document.text))  # Move cursor to end
-
+            raise ValidationError(message = 'Token invalid', cursor_position = len(document.text))  # Move cursor to end
 
 def main():
     global cloud, config, custom_ips, blacklist, friends
@@ -172,6 +151,7 @@ def main():
                 print_white('Cloud service online')
 
                 if cloud.check_token():
+                    logger.info("Cloud token active.")
                     data.update_cloud_friends()
                 else:
                     logger.info('Invalid token.')
@@ -240,7 +220,7 @@ def main():
                 }
             ]
         }
-        answer = prompt(options, style=style, )
+        answer = prompt(options, style = style, )
         if not answer:
             if pydivert.WinDivert.is_registered():
                 pydivert.WinDivert.unregister()
@@ -274,6 +254,7 @@ def main():
             public_ip = get_public_ip()
             if public_ip:
                 ip_set.add(public_ip)
+                logger.info("Public IP obtained: %s", str(public_ip))
             else:
                 print_white('Failed to get Public IP. Running without.')
 
@@ -303,7 +284,7 @@ def main():
                         Fore.LIGHTWHITE_EX + '" to stop.')
 
             """ Set up packet_filter outside the try-catch so it can be safely referenced inside KeyboardInterrupt."""
-            packet_filter = Whitelist(ips=ip_set)
+            packet_filter = Whitelist(ips = ip_set)
 
             print("Experimental support for Online 1.54+ developed by Speyedr.\n",
                   "Not working? Found a bug?", "https://gitlab.com/Speyedr/guardian-fastload-fix/-/issues",
@@ -331,6 +312,7 @@ def main():
                     try:
                         ip = IPValidator.validate_get(item.get('ip'))
                         ip_set.add(ip)
+                        logger.info("Validated IP: %s", str(ip))
                     except ValidationError:
                         logger.warning('Not valid IP or URL: {}'.format(ip))
                         print_white('Not valid IP or URL: "' +
@@ -344,7 +326,7 @@ def main():
                         Fore.LIGHTBLACK_EX + 'CTRL + C' +
                         Fore.LIGHTWHITE_EX + '" to stop.')
 
-            packet_filter = Whitelist(ips=ip_set)
+            packet_filter = Whitelist(ips = ip_set)
             try:
                 packet_filter.start()
                 while True:
@@ -361,7 +343,7 @@ def main():
             collector = IPCollector()
             logger.info('Starting to collect IPs')
             collector.start()
-            for _ in tqdm(range(10), ascii=True, desc='Collecting session'):
+            for _ in tqdm(range(10), ascii = True, desc = 'Collecting session'):
                 time.sleep(1)
             collector.stop()
             ip_set = set(collector.ips)
@@ -399,7 +381,7 @@ def main():
                         Fore.LIGHTCYAN_EX + 'CTRL + C' +
                         Fore.LIGHTWHITE_EX + '" to stop.')
 
-            packet_filter = Whitelist(ips=ip_set)
+            packet_filter = Whitelist(ips = ip_set)
             try:
                 packet_filter.start()
                 while True:
@@ -467,7 +449,7 @@ def main():
             # TODO: There's a formatting fail here and in at least one other session type.
             #  I have a feeling I'll eventually refactor Guardian enough to hit v4.
 
-            packet_filter = LockedWhitelist(ips=ip_set)
+            packet_filter = LockedWhitelist(ips = ip_set)
             try:
                 packet_filter.start()
                 while True:
@@ -539,7 +521,7 @@ def main():
                                 }
                             ]
                         }
-                        answer = prompt(options, style=style)
+                        answer = prompt(options, style = style)
 
                         if not answer or answer['option'] == 'return':
                             os.system('cls')
@@ -562,7 +544,7 @@ def main():
                                     'message': 'Select who to enable',
                                     'choices': c
                                 }
-                                answer = prompt(options, style=style)
+                                answer = prompt(options, style = style)
                                 if not answer:
                                     os.system('cls')
                                     continue
@@ -591,7 +573,7 @@ def main():
                                 },
                             ]
 
-                            answer = prompt(options, style=style)
+                            answer = prompt(options, style = style)
                             if not answer:
                                 os.system('cls')
                                 continue
@@ -626,7 +608,7 @@ def main():
                                         'message': 'Select who view',
                                         'choices': c
                                     }
-                                    name = prompt(options, style=style)
+                                    name = prompt(options, style = style)
                                     if not name:
                                         os.system('cls')
                                         break
@@ -683,7 +665,7 @@ def main():
                                                 },
                                             ]
 
-                                            answer = prompt(options, style=style)
+                                            answer = prompt(options, style = style)
                                             if not answer:
                                                 os.system('cls')
                                                 break
@@ -734,7 +716,7 @@ def main():
                                 }
                             ]
                         }
-                        answer = prompt(options, style=style)
+                        answer = prompt(options, style = style)
 
                         if not answer or answer['option'] == 'return':
                             os.system('cls')
@@ -757,7 +739,7 @@ def main():
                                     'message': 'Select who to enable',
                                     'choices': c
                                 }
-                                answer = prompt(options, style=style)
+                                answer = prompt(options, style = style)
                                 if not answer:
                                     os.system('cls')
                                     continue
@@ -784,7 +766,7 @@ def main():
                                 },
                             ]
 
-                            answer = prompt(options, style=style)
+                            answer = prompt(options, style = style)
                             if not answer:
                                 os.system('cls')
                                 continue
@@ -819,7 +801,7 @@ def main():
                                         'message': 'Select who view',
                                         'choices': c
                                     }
-                                    name = prompt(options, style=style)
+                                    name = prompt(options, style = style)
                                     if not name:
                                         os.system('cls')
                                         break
@@ -844,15 +826,14 @@ def main():
                                         ]
                                     }
                                     name = name['name']
-                                    answer = prompt(options, style=style)
+                                    answer = prompt(options, style = style)
                                     if not answer or answer['option'] == 'return':
                                         os.system('cls')
                                         break
 
                                     elif answer['option'] == 'edit':
                                         while True:
-                                            print(
-                                                'Notice, user deleted. Press enter to go back / Save. Quit and you lose him.')
+                                            print('Notice, user deleted. Press enter to go back / Save. Quit and you lose him.')
                                             ip, item = blacklist.find(name)
                                             blacklist.delete(ip)
                                             config.save()
@@ -876,7 +857,7 @@ def main():
                                                 },
                                             ]
 
-                                            answer = prompt(options, style=style)
+                                            answer = prompt(options, style = style)
                                             if not answer:
                                                 os.system('cls')
                                                 break
@@ -947,7 +928,7 @@ def main():
                                         'checked': True if f.get('enabled') else None,
                                     } for ip, f in friends]
                                 }
-                                answer = prompt(options, style=style)
+                                answer = prompt(options, style = style)
                                 if not answer:
                                     os.system('cls')
                                     break
@@ -988,7 +969,7 @@ def main():
                                         }
                                     ]
                                 }
-                                answer = prompt(options, style=style)
+                                answer = prompt(options, style = style)
                                 if not answer or answer['option'] == 'return':
                                     os.system('cls')
                                     break
@@ -1008,7 +989,7 @@ def main():
                                             'message': 'Who to revoke',
                                             'choices': [f.get('name') for f in allowed]
                                         }
-                                        answer = prompt(options, style=style)
+                                        answer = prompt(options, style = style)
                                         if not answer:
                                             os.system('cls')
                                             break
@@ -1034,7 +1015,7 @@ def main():
                                             'message': 'Request from who',
                                             'choices': [f.get('name') for ip, f in friends]
                                         }
-                                        answer = prompt(options, style=style)
+                                        answer = prompt(options, style = style)
                                         if not answer:
                                             os.system('cls')
                                             break
@@ -1060,7 +1041,7 @@ def main():
                                             'message': 'Select user',
                                             'choices': [f.get('name') for f in pending]
                                         }
-                                        answer = prompt(options, style=style)
+                                        answer = prompt(options, style = style)
                                         name = answer['option']
                                         if not answer:
                                             os.system('cls')
@@ -1086,7 +1067,7 @@ def main():
                                                 }
                                             ]
                                         }
-                                        answer = prompt(options, style=style)
+                                        answer = prompt(options, style = style)
 
                                         if not answer or answer['option'] == 'return':
                                             os.system('cls')
@@ -1123,7 +1104,7 @@ def main():
                 'message': 'Select IP\'s to kick',
                 'choices': [ip for ip in ip_set]
             }
-            answer = prompt(options, style=style)
+            answer = prompt(options, style = style)
             if not answer:
                 os.system('cls')
                 break
@@ -1132,7 +1113,7 @@ def main():
             print_white('Running: "' +
                         Fore.LIGHTBLACK_EX + 'Blacklist' +
                         Fore.LIGHTWHITE_EX + '"')
-            packet_filter = Blacklist(ips=ips)
+            packet_filter = Blacklist(ips = ips)
             packet_filter.start()
             time.sleep(30)
             packet_filter.stop()
@@ -1161,8 +1142,8 @@ def main():
                 if friend.get('enabled'):
                     ip_set.add(ip)
             print_white('Kicking unknowns')
-            time.sleep(1)
-            packet_filter = Whitelist(ips=ip_set)
+            time.sleep(1)   
+            packet_filter = Whitelist(ips = ip_set)
             packet_filter.start()
             time.sleep(15)
             packet_filter.stop()
@@ -1171,7 +1152,7 @@ def main():
         elif option == 'new':
             print_white('Creating new session')
             time.sleep(1)
-            packet_filter = Whitelist(ips=[])
+            packet_filter = Whitelist(ips = [])
             packet_filter.start()
             time.sleep(15)
             packet_filter.stop()
@@ -1188,7 +1169,7 @@ def main():
             }
             if token:
                 options['default'] = token
-            answer = prompt(options, style=style)
+            answer = prompt(options, style = style)
             if not answer:
                 os.system('cls')
                 continue
@@ -1209,7 +1190,7 @@ def main():
                 'qmark': '@',
                 'message': 'Agree?'
             }
-            answer = prompt(options, style=style)
+            answer = prompt(options, style = style)
             if not answer:
                 os.system('cls')
                 continue
@@ -1229,7 +1210,7 @@ def main():
                         ip_set.append(friend.get('ip'))
                 debugger = Debugger(ip_set)
                 debugger.start()
-                for _ in tqdm(range(60), ascii=True, desc='Collecting Requests'):
+                for _ in tqdm(range(60), ascii = True, desc = 'Collecting Requests'):
                     time.sleep(1)
                 debugger.stop()
                 time.sleep(1)
@@ -1262,7 +1243,7 @@ def main():
 
                 print_white('Writing data')
                 with open("datacheck.json", "w+") as datafile:
-                    json.dump(datas, datafile, indent=2)
+                    json.dump(datas, datafile, indent = 2)
                 print_white('Packing debug request')
                 compressed = zipfile.ZipFile('debugger-{}.zip'.format(time.strftime("%Y%m%d-%H%M%S")), "w",
                                              zipfile.ZIP_DEFLATED)
@@ -1330,7 +1311,7 @@ if __name__ == '__main__':
                     'qmark': '@',
                     'default': True
                 }
-                answer = prompt(options, style=style)
+                answer = prompt(options, style = style)
                 if answer['option']:
                     webbrowser.open('https://www.thedigitalarc.com/software/Guardian')
         token = config.get('token')
